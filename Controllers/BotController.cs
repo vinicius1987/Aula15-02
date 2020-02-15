@@ -15,7 +15,16 @@ namespace WebhookDF.Controllers
     [Route("api/[controller]")]
     public class BotController : ControllerBase
     {
-		private ProjectAgentName _projectAgentName = new ProjectAgentName(Environment.GetEnvironmentVariable("PROJETO_AGENT_NAME"));
+
+
+		private ProjectAgentName _projectAgentName = new ProjectAgentName("cursos2-jaijhy");
+
+		public BotController(IWebHostEnvironment env)
+		{
+
+			Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS",
+				env.ContentRootPath + @"//cursos2-jaijhy-9696e07beee3.json");
+		}
 
 		[HttpGet("[action]")]
 		public ActionResult DetectIntentFromTexts(string q, string sessionId)
@@ -83,6 +92,15 @@ namespace WebhookDF.Controllers
 			}
 
 		}
+
+
 	}
+
+
+
+
+
+
+
 }
  
