@@ -15,47 +15,74 @@ namespace WebhookDF.Controllers
     [Route("api/[controller]")]
     public class BotController : ControllerBase
     {
-		private static readonly JsonParser _jsonParser = new JsonParser(JsonParser.Settings.Default.WithIgnoreUnknownFields(true));
+		private ProjectAgentName _projectAgentName = new ProjectAgentName(Environment.GetEnvironmentVariable("PROJETO_AGENT_NAME"));
 
-		System.Text.Json.JsonSerializerOptions _jsonSetting = new System.Text.Json.JsonSerializerOptions()
+		[HttpGet("[action]")]
+		public ActionResult DetectIntentFromTexts(string q, string sessionId)
 		{
-			PropertyNameCaseInsensitive = true
-		};
+			try
+			{
+				var client = SessionsClient.Create();
 
-		string _agentName = "botunoeste-tojago";
+				DetectIntentRequest request = new DetectIntentRequest();
+				request.SessionAsSessionName = new SessionName(_projectAgentName.ProjectId, sessionId);
+				request.QueryInput = new QueryInput
+				{
+					Text = new TextInput()
+					{
+						Text = q,
+						LanguageCode = "pt-br"
+					}
+				};
 
-		public BotController()
-		{
+				DetectIntentResponse response = client.DetectIntent(request);
+
+				var queryResult = response.QueryResult;
+
+				return Ok(queryResult);
+
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, ex.Message);
+
+			}
 		}
 
 
-		[HttpGet]
-        public IActionResult Get()
-        {
-			return Ok(new { msg = "deu certo" });
-        }
-
-		private bool Autorizado(IHeaderDictionary httpHeader)
+		[HttpGet("[action]")]
+		public ActionResult GetEvent(string eventName, string sessionId)
 		{
 
-			string basicAuth = httpHeader["Authorization"];
-
-			if (!string.IsNullOrEmpty(basicAuth))
+			try
 			{
-				basicAuth = basicAuth.Replace("Basic ", "");
+				var client = SessionsClient.Create();
 
-				byte[] aux = System.Convert.FromBase64String(basicAuth);
-				basicAuth = System.Text.Encoding.UTF8.GetString(aux);
+				DetectIntentRequest request = new DetectIntentRequest();
+				request.SessionAsSessionName = new SessionName(_projectAgentName.ProjectId, sessionId);
+				request.QueryInput = new QueryInput
+				{
+					Event = new EventInput
+					{
+						Name = eventName,
+						LanguageCode = "pt-br"
+					}
+				};
 
-				if (basicAuth == "nome:token")
-					return true;
+				request.QueryParams = new QueryParameters();
+
+				DetectIntentResponse response = client.DetectIntent(request);
+
+				var queryResult = response.QueryResult;
+
+				return Ok(queryResult);
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, ex.Message);
 			}
 
-			return false;
 		}
-		
-		
-
 	}
 }
  
